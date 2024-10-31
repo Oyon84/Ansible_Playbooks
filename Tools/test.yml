@@ -1,0 +1,10 @@
+- name: Update Proxmox Cluster with HA Maintenance
+  hosts: proxmox_cluster_prod
+  gather_facts: yes
+  serial: 1  # Process one node at a time for stability in the cluster
+
+  tasks:
+    - name: Put node in maintenance mode using ha-manager
+      shell: ha-manager crm-command node-maintenance disable "{{ inventory_hostname }}"
+      register: maintenance_mode
+      changed_when: false
