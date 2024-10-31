@@ -7,7 +7,7 @@
 
   tasks:
     - name: Put node in maintenance mode using ha-manager
-      shell: ha-manager crm-command node-maintenance disable "{{ inventory_hostname }}"
+      shell: ha-manager crm-command node-maintenance enable "{{ inventory_hostname }}"
       register: maintenance_mode
       changed_when: false
 
