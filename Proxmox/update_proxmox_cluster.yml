@@ -58,6 +58,6 @@
       when: proxmox_status.stdout == "active"
 
     - name: Remove node from maintenance mode using ha-manager
-      shell: ha-manager node-maintenance --disable
+      shell: ha-manager crm-command node-maintenance disable {{inventory_hostname}}
       when: maintenance_mode is succeeded
       changed_when: false
