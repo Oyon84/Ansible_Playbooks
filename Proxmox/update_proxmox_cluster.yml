@@ -1,0 +1,44 @@
+---
+- name: Update Proxmox Cluster
+  hosts: proxmox_cluster  # Replace this with your Ansible inventory group for the Proxmox nodes
+  become: yes  # Ensure the playbook has root access
+  gather_facts: yes
+
+  tasks:
+    - name: Update package list
+      apt:
+        update_cache: yes
+
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+        autoremove: yes
+        autoclean: yes
+
+    - name: Check if a reboot is required
+      stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Reboot the server if needed
+      reboot:
+        msg: "Rebooting to apply updates"
+        connect_timeout: 5
+        reboot_timeout: 600
+      when: reboot_required.stat.exists
+
+    - name: Wait for node to come back online
+      wait_for_connection:
+        delay: 10
+        timeout: 300
+      when: reboot_required.stat.exists
+
+    - name: Verify Proxmox services are running
+      shell: systemctl is-active pve-cluster
+      register: proxmox_status
+      changed_when: false
+
+    - name: Check Proxmox status
+      debug:
+        msg: "Proxmox services are running correctly."
+      when: proxmox_status.stdout == "active"
