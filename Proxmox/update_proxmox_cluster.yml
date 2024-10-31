@@ -1,10 +1,24 @@
 ---
-- name: Update Proxmox Cluster
-  hosts: proxmox_cluster_prod  # Replace this with your Ansible inventory group for the Proxmox nodes
-  become: yes  # Ensure the playbook has root access
+- name: Update Proxmox Cluster with HA Maintenance
+  hosts: proxmox_cluster_prod
+  become: yes
   gather_facts: yes
+  serial: 1  # Process one node at a time for stability in the cluster
 
   tasks:
+    - name: Put node in maintenance mode using ha-manager
+      shell: ha-manager crm-command node-maintenance disable "{{ inventory_hostname }}"
+      register: maintenance_mode
+      changed_when: false
+
+    - name: Confirm node is in maintenance mode
+      shell: ha-manager status | grep "{{ inventory_hostname }}"
+      register: ha_status
+      changed_when: false
+      until: "'maintenance' in ha_status.stdout"
+      retries: 3
+      delay: 5
+
     - name: Update package list
       apt:
         update_cache: yes
@@ -42,3 +56,8 @@
       debug:
         msg: "Proxmox services are running correctly."
       when: proxmox_status.stdout == "active"
+
+    - name: Remove node from maintenance mode using ha-manager
+      shell: ha-manager node-maintenance --disable
+      when: maintenance_mode is succeeded
+      changed_when: false
