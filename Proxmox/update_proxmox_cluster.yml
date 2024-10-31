@@ -16,8 +16,8 @@
       register: ha_status
       changed_when: false
       until: "'maintenance' in ha_status.stdout"
-      retries: 3
-      delay: 10
+      retries: 10
+      delay: 15
 
     - name: Update package list
       apt:
