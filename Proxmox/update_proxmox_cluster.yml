@@ -1,6 +1,6 @@
 ---
 - name: Update Proxmox Cluster
-  hosts: proxmox_cluster  # Replace this with your Ansible inventory group for the Proxmox nodes
+  hosts: proxmox_cluster_prod  # Replace this with your Ansible inventory group for the Proxmox nodes
   become: yes  # Ensure the playbook has root access
   gather_facts: yes
 
